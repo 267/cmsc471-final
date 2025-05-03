@@ -36,7 +36,11 @@
     how much that event is worth in relation to projected runs scored
   * xba --> Expected Batting Average: the likelihood that a batted ball will become a hit based on exit 
     velocity, launch angle, on certin types of batted balls. xBA is given a figure based on balls with similar exit velocities, and launch angle
-  * xobp --> Expected On-base
+  * xobp --> Expected On-base Percentage based on the quality of contact, and the player's speed.
+  * xslg --> Expected Slugging, uses exit velocity, launch angle, and Sprint speed on certian types of 
+    batted balls. Removes defense from the equation to calcualte quality of contact, instead of actual outcomes
+  * xwoba --> Expected Weighted On-Base Percentage, uses same formula as woba but removes defense from the 
+    equation and uses exit-velocity and launch angle and uses these to determine the probability of the type of hit the batted ball is going to be.
 
   ********* DEFENSIVE STATS *********
   * n_outs_above_average --> How many outs a player has saved. Takes into accoount:
