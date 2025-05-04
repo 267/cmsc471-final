@@ -88,7 +88,7 @@ const options = {
   hit: "Hits",
   home_run: "Home Runs",
   k_percent: "Strikeout Percentage",
-  launch_angle_average: "Launch Angle Avg",
+  launch_angle_average: "Launch Angle Average",
   on_base_percent: "On-Base Percentage",
   on_base_plus_slg: "On-Base Plus Slugging",
   pa: "Plate Appearances",
@@ -105,8 +105,8 @@ const options = {
   xslg: "Expected Slugging",
   xwoba: "Expected Weighted On-Base Average",
   n_outs_above_average: "Outs Above Average",
-  rel_league_reaction_dsitance: "Reaction Distance (ft)",
-  rel_league_burst_distnce: "Burst Distance (ft)",
+  rel_league_reaction_distance: "Reaction Distance (ft)",
+  rel_league_burst_distance: "Burst Distance (ft)",
   sprint_speed: "Sprint Speed (ft/s)",
 };
 
@@ -143,14 +143,14 @@ const data = await d3.csv("data/stats.csv", (d) => ({
   avg_hyper_speed: parseFloat(d.avg_hyper_speed),
   barrel: parseFloat(d.barrel),
   barrel_batted_rate: parseFloat(d.barrel_batted_rate),
-  batting_average: parseFloat(d.batting_average),
+  batting_average: parseFloat(d.batting_avg),
   bb_percent: parseFloat(d.bb_percent),
   exit_velocity_avg: parseFloat(d.exit_velocity_avg),
-  hard_hit_percentage: parseFloat(d.hard_hit_percentage),
+  hard_hit_percentage: parseFloat(d.hard_hit_percent),
   hit: parseFloat(d.hit),
   home_run: parseFloat(d.home_run),
   k_percent: parseFloat(d.k_percent),
-  launch_angle_average: parseFloat(d.launch_angle_average),
+  launch_angle_average: parseFloat(d.launch_angle_avg),
   on_base_percent: parseFloat(d.on_base_percent),
   on_base_plus_slg: parseFloat(d.on_base_plus_slg),
   pa: parseFloat(d.pa),
@@ -167,8 +167,8 @@ const data = await d3.csv("data/stats.csv", (d) => ({
   xslg: parseFloat(d.xslg),
   xwoba: parseFloat(d.xwoba),
   n_outs_above_average: parseFloat(d.n_outs_above_average),
-  rel_league_reaction_dsitance: parseFloat(d.rel_league_reaction_dsitance),
-  rel_league_burst_distnce: parseFloat(d.rel_league_burst_distnce),
+  rel_league_reaction_distance: parseFloat(d.rel_league_reaction_distance),
+  rel_league_burst_distance: parseFloat(d.rel_league_burst_distance),
   sprint_speed: parseFloat(d.sprint_speed),
 }));
 
@@ -246,7 +246,7 @@ function update() {
           .attr("class", "points")
           .attr("cx", (d) => xScale(d[xVar]))
           .attr("cy", (d) => yScale(d[yVar]))
-          .style("fill", (d) => colors(d.batting_average))
+          // .style("fill", (d) => colors(d.batting_average))
           .style("opacity", 0.5)
           .style("stroke", "black")
           .style("stroke-width", "0")
@@ -274,8 +274,8 @@ function update() {
           .transition(t)
           .attr("cx", (d) => xScale(d[xVar]))
           .attr("cy", (d) => yScale(d[yVar]))
-          .attr("r", 5)
-          .style("fill", (d) => colors(d.batting_average)),
+          .attr("r", 5),
+          // .style("fill", (d) => colors(d.batting_average)),
       (exit) => exit.transition(t).attr("r", 0).remove()
     );
 
