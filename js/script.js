@@ -70,11 +70,224 @@ const svg = d3
   .append("g")
   .attr("transform", `translate(${margin.left},${margin.top})`);
 
-async function init() {
-  d3.csv("./data/stats.csv").then((data) => {
-    const sortedCols = data.columns.slice().sort((a, b) => a.localeCompare(b));
-    console.log(sortedCols);
-  });
-}
+let xVar = "ab";
+let yVar = "avg_best_speed";
+let xScale;
+let yScale;
 
-window.addEventListener("load", init);
+const options = {
+  ab: "At-Bats",
+  avg_best_speed: "Avg Best Speed",
+  avg_hyper_speed: "Avg Hyper Speed",
+  barrel: "Barrel",
+  barrel_batted_rate: "Barrel Batted Rate",
+  batting_average: "Batting Average",
+  bb_percent: "Walk Percentage",
+  exit_velocity_avg: "Exit Velocity Avg",
+  hard_hit_percentage: "Hard Hit Percentage",
+  hit: "Hits",
+  home_run: "Home Runs",
+  k_percent: "Strikeout Percentage",
+  launch_angle_average: "Launch Angle Avg",
+  on_base_percent: "On-Base Percentage",
+  on_base_plus_slg: "On-Base Plus Slugging",
+  pa: "Plate Appearances",
+  slg_percent: "Slugging Percentage",
+  solidcontact_percent: "Solid Contact Percentage",
+  strikeout: "Strikeouts",
+  sweet_spot_percent: "Sweet Spot Percentage",
+  swing_percent: "Swing Percentage",
+  walk: "Walks",
+  whiff_percent: "Whiff Percentage",
+  woba: "Weighted On-Base Average",
+  xba: "Expected Batting Average",
+  xobp: "Expected On-Base Percentage",
+  xslg: "Expected Slugging",
+  xwoba: "Expected Weighted On-Base Average",
+  n_outs_above_average: "Outs Above Average",
+  rel_league_reaction_dsitance: "Reaction Distance (ft)",
+  rel_league_burst_distnce: "Burst Distance (ft)",
+  sprint_speed: "Sprint Speed (ft/s)",
+};
+
+d3.selectAll(".variable")
+  .each(function () {
+    d3.select(this)
+      .selectAll("myOptions")
+      .data(Object.keys(options))
+      .enter()
+      .append("option")
+      .text((d) => options[d])
+      .attr("value", (d) => d);
+  })
+  .on("change", function () {
+    switch (d3.select(this).property("id")) {
+      case "xVariable":
+        xVar = d3.select(this).property("value");
+        break;
+      case "yVariable":
+        yVar = d3.select(this).property("value");
+        break;
+    }
+    update();
+  });
+d3.select("#xVariable").property("value", xVar);
+d3.select("#yVariable").property("value", yVar);
+
+
+
+const data = await d3.csv("data/stats.csv", (d) => ({
+  player_id: d.player_id,
+  ab: parseFloat(d.ab),
+  avg_best_speed: parseFloat(d.avg_best_speed),
+  avg_hyper_speed: parseFloat(d.avg_hyper_speed),
+  barrel: parseFloat(d.barrel),
+  barrel_batted_rate: parseFloat(d.barrel_batted_rate),
+  batting_average: parseFloat(d.batting_average),
+  bb_percent: parseFloat(d.bb_percent),
+  exit_velocity_avg: parseFloat(d.exit_velocity_avg),
+  hard_hit_percentage: parseFloat(d.hard_hit_percentage),
+  hit: parseFloat(d.hit),
+  home_run: parseFloat(d.home_run),
+  k_percent: parseFloat(d.k_percent),
+  launch_angle_average: parseFloat(d.launch_angle_average),
+  on_base_percent: parseFloat(d.on_base_percent),
+  on_base_plus_slg: parseFloat(d.on_base_plus_slg),
+  pa: parseFloat(d.pa),
+  slg_percent: parseFloat(d.slg_percent),
+  solidcontact_percent: parseFloat(d.solidcontact_percent),
+  strikeout: parseFloat(d.strikeout),
+  sweet_spot_percent: parseFloat(d.sweet_spot_percent),
+  swing_percent: parseFloat(d.swing_percent),
+  walk: parseFloat(d.walk),
+  whiff_percent: parseFloat(d.whiff_percent),
+  woba: parseFloat(d.woba),
+  xba: parseFloat(d.xba),
+  xobp: parseFloat(d.xobp),
+  xslg: parseFloat(d.xslg),
+  xwoba: parseFloat(d.xwoba),
+  n_outs_above_average: parseFloat(d.n_outs_above_average),
+  rel_league_reaction_dsitance: parseFloat(d.rel_league_reaction_dsitance),
+  rel_league_burst_distnce: parseFloat(d.rel_league_burst_distnce),
+  sprint_speed: parseFloat(d.sprint_speed),
+}));
+
+update();
+
+function update() {
+  const t = 1000;
+  const currentData = data.filter(
+    (d) => !isNaN(d[xVar]) && !isNaN(d[yVar])
+  );
+
+  svg.selectAll(".axis").remove();
+  svg.selectAll(".labels").remove();
+
+  xScale = d3
+    .scaleLinear()
+    .domain([
+      Math.min(
+        0,
+        d3.min(currentData, (d) => d[xVar])
+      ),
+      d3.max(currentData, (d) => d[xVar]),
+    ])
+    .range([0, width]);
+  const xAxis = d3.axisBottom(xScale);
+  svg
+    .append("g")
+    .attr("class", "axis")
+    .attr("transform", `translate(0,${height})`)
+    .call(xAxis);
+
+  yScale = d3
+    .scaleLinear()
+    .domain([
+      Math.min(
+        0,
+        d3.min(currentData, (d) => d[yVar])
+      ),
+      d3.max(currentData, (d) => d[yVar]),
+    ])
+    .range([height, 0]);
+  const yAxis = d3.axisLeft(yScale);
+  svg.append("g").attr("class", "axis").call(yAxis);
+
+  svg
+    .append("text")
+    .attr("x", width / 2)
+    .attr("y", height + margin.bottom - 20)
+    .attr("text-anchor", "middle")
+    .text(options[xVar])
+    .attr("class", "labels");
+
+  svg
+    .append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -height / 2)
+    .attr("y", -margin.left + 40)
+    .attr("text-anchor", "middle")
+    .text(options[yVar])
+    .attr("class", "labels");
+
+    const colors = (x) => { // change these eventually
+      return "#000000"; 
+    };
+
+
+
+    svg
+    .selectAll(".points")
+    .data(currentData, (d) => d)
+    .join(
+      (enter) =>
+        enter
+          .append("circle")
+          .attr("class", "points")
+          .attr("cx", (d) => xScale(d[xVar]))
+          .attr("cy", (d) => yScale(d[yVar]))
+          .style("fill", (d) => colors(d.batting_average))
+          .style("opacity", 0.5)
+          .style("stroke", "black")
+          .style("stroke-width", "0")
+          .on("mouseover", function (event, d) {
+            d3.select("#tooltip")
+              .style("display", "block")
+              .html(
+                `<p>Haiii</p>`
+              )
+              .style("left", event.pageX + 20 + "px")
+              .style("top", event.pageY - 28 + "px");
+            d3.select(this)
+              .style("strong", "black")
+              .style("stroke-width", "4px");
+          })
+          .on("mouseout", function (event, d) {
+            d3.select("#tooltip").style("display", "none");
+            d3.select(this).style("stroke", "none");
+          })
+          .attr("r", 0)
+          .transition(t)
+          .attr("r", 5),
+      (update) =>
+        update
+          .transition(t)
+          .attr("cx", (d) => xScale(d[xVar]))
+          .attr("cy", (d) => yScale(d[yVar]))
+          .attr("r", 5)
+          .style("fill", (d) => colors(d.batting_average)),
+      (exit) => exit.transition(t).attr("r", 0).remove()
+    );
+
+
+
+  }
+
+// async function init() {
+//   d3.csv("./data/stats.csv").then((data) => {
+//     const sortedCols = data.columns.slice().sort((a, b) => a.localeCompare(b));
+//     console.log(sortedCols);
+//   });
+// }
+
+// window.addEventListener("load", init);
