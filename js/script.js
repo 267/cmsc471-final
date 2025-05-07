@@ -61,6 +61,10 @@ Secondary plot: Hoving over datapoint gives a spider plot for the given player a
 const margin = { top: 80, right: 60, bottom: 60, left: 100 };
 const width = 800 - margin.left - margin.right;
 const height = 600 - margin.top - margin.bottom;
+const player_margin = { top: 60, right: 60, bottom: 60, left: 60 };
+const player_width = 360 - player_margin.left - player_margin.right;
+const player_height = 600 - player_margin.top - player_margin.bottom;
+const player_center = { x: player_width / 2, y: player_height / 2 + 40 };
 
 const svg = d3
   .select("#vis")
@@ -69,6 +73,14 @@ const svg = d3
   .attr("height", height + margin.top + margin.bottom)
   .append("g")
   .attr("transform", `translate(${margin.left},${margin.top})`);
+
+const player = d3
+  .select("#player")
+  .append("svg")
+  .attr("width", player_width + player_margin.left + player_margin.right)
+  .attr("height", player_height + player_margin.top + player_margin.bottom)
+  .append("g")
+  .attr("transform", `translate(${player_margin.left},${player_margin.top})`);
 
 let xVar = "ab";
 let yVar = "avg_best_speed";
@@ -134,9 +146,8 @@ d3.selectAll(".variable")
 d3.select("#xVariable").property("value", xVar);
 d3.select("#yVariable").property("value", yVar);
 
-
-
 const data = await d3.csv("data/stats.csv", (d) => ({
+  name: d["last_name, first_name"],
   player_id: d.player_id,
   ab: parseFloat(d.ab),
   avg_best_speed: parseFloat(d.avg_best_speed),
@@ -176,9 +187,7 @@ update();
 
 function update() {
   const t = 1000;
-  const currentData = data.filter(
-    (d) => !isNaN(d[xVar]) && !isNaN(d[yVar])
-  );
+  const currentData = data.filter((d) => !isNaN(d[xVar]) && !isNaN(d[yVar]));
 
   svg.selectAll(".axis").remove();
   svg.selectAll(".labels").remove();
@@ -188,7 +197,7 @@ function update() {
     .domain([
       Math.min(
         0,
-        d3.min(currentData, (d) => d[xVar])
+        d3.min(currentData, (d) => d[xVar]),
       ),
       d3.max(currentData, (d) => d[xVar]),
     ])
@@ -205,7 +214,7 @@ function update() {
     .domain([
       Math.min(
         0,
-        d3.min(currentData, (d) => d[yVar])
+        d3.min(currentData, (d) => d[yVar]),
       ),
       d3.max(currentData, (d) => d[yVar]),
     ])
@@ -230,13 +239,12 @@ function update() {
     .text(options[yVar])
     .attr("class", "labels");
 
-    const colors = (x) => { // change these eventually
-      return "#000000"; 
-    };
+  const colors = (x) => {
+    // change these eventually
+    return "#000000";
+  };
 
-
-
-    svg
+  svg
     .selectAll(".points")
     .data(currentData, (d) => d)
     .join(
@@ -253,18 +261,18 @@ function update() {
           .on("mouseover", function (event, d) {
             d3.select("#tooltip")
               .style("display", "block")
-              .html(
-                `<p>Haiii</p>`
-              )
+              .html(`<p>Haiii</p>`)
               .style("left", event.pageX + 20 + "px")
               .style("top", event.pageY - 28 + "px");
             d3.select(this)
               .style("strong", "black")
               .style("stroke-width", "4px");
+            showPlayer(d);
           })
           .on("mouseout", function (event, d) {
             d3.select("#tooltip").style("display", "none");
             d3.select(this).style("stroke", "none");
+            showPlayer(null);
           })
           .attr("r", 0)
           .transition(t)
@@ -275,13 +283,162 @@ function update() {
           .attr("cx", (d) => xScale(d[xVar]))
           .attr("cy", (d) => yScale(d[yVar]))
           .attr("r", 5),
-          // .style("fill", (d) => colors(d.batting_average)),
-      (exit) => exit.transition(t).attr("r", 0).remove()
+      // .style("fill", (d) => colors(d.batting_average)),
+      (exit) => exit.transition(t).attr("r", 0).remove(),
     );
+}
 
+function showPlayer(d) {
+  player.selectAll(".player").remove();
 
-
+  if (d == null) {
+    return;
   }
+
+  player
+    .append("text")
+    .attr("x", player_width / 2)
+    .attr("y", player_margin.top - 20)
+    .attr("text-anchor", "middle")
+    .text(d.name)
+    .attr("class", "player");
+
+  // https://observablehq.com/@huangshew/spider-chart/2
+
+  // TODO
+  const stats = {
+    a: d.ab / 800,
+    b: d.avg_best_speed / 150,
+    c: d.avg_hyper_speed / 150,
+  };
+  const features = Object.keys(stats);
+
+  let radialScale = d3
+    .scaleLinear()
+    .domain([0, 1])
+    .range([0, player_width / 2]);
+
+  let ticks = [0.25, 0.5, 0.75, 1];
+
+  ticks.forEach((t) =>
+    player
+      .append("circle")
+      .attr("cx", player_center.x)
+      .attr("cy", player_center.y)
+      .attr("fill", "none")
+      .attr("stroke", "#e8e8e8")
+      .attr("stroke-width", "2")
+      .attr("r", radialScale(t))
+      .attr("class", "player"),
+  );
+
+  ticks.forEach((t) =>
+    player
+      .append("text")
+      .attr("x", player_center.x - 15)
+      .attr("y", player_center.y - radialScale(t) - 5)
+      .attr("fill", "#bbbbbb")
+      .attr("font-size", "10px")
+      .text(t.toString())
+      .attr("class", "player"),
+  );
+
+  function angleToCoordinate(angle, value) {
+    let x = player_center.x + Math.cos(angle) * radialScale(value);
+    let y = player_center.y + Math.sin(angle) * radialScale(value);
+    console.log(x, y);
+    return { x, y };
+  }
+
+  for (var i = 0; i < features.length; i++) {
+    let angle = Math.PI / 2 + (2 * Math.PI * i) / features.length;
+    let line_coordinate = angleToCoordinate(angle, 1);
+    let label_coordinate = angleToCoordinate(angle, 1.2);
+
+    player
+      .append("text")
+      .attr("text-anchor", "middle")
+      .attr("alignment-baseline", "central")
+      .attr("x", label_coordinate.x)
+      .attr("y", label_coordinate.y)
+      .attr("font-size", "11px")
+      .attr("fill", "#333333")
+      .text(features[i])
+      .attr("class", "player");
+
+    player
+      .append("line")
+      .attr("x1", player_center.x)
+      .attr("y1", player_center.y)
+      .attr("x2", line_coordinate.x)
+      .attr("y2", line_coordinate.y)
+      .attr("stroke", "#e8e8e8")
+      .attr("stroke-width", "2")
+      .attr("class", "player");
+  }
+
+  function getPathCoordinates(data_point) {
+    let coordinates = [];
+    for (var i = 0; i < features.length; i++) {
+      let ft_name = features[i];
+      let angle = Math.PI / 2 + (2 * Math.PI * i) / features.length;
+      coordinates.push(angleToCoordinate(angle, data_point[ft_name]));
+    }
+    return coordinates;
+  }
+
+  const coords = getPathCoordinates(stats);
+
+  coords.forEach((d) => {
+    player
+      .append("circle")
+      .attr("r", 4)
+      .attr("fill", "#af2d2d")
+      .attr("cx", d.x)
+      .attr("cy", d.y)
+      .attr("class", "player");
+  });
+
+  var lg = player
+    .append("defs")
+    .append("linearGradient")
+    .attr("id", "mygrad")
+    .attr("x1", "0%")
+    .attr("x2", "0%")
+    .attr("y1", "0%")
+    .attr("y2", "100%")
+    .attr("class", "player");
+
+  lg.append("stop")
+    .attr("offset", "0%")
+    .style("stop-color", "#ce6262")
+    .style("stop-opacity", 0)
+    .attr("class", "player");
+
+  lg.append("stop")
+    .attr("offset", "100%")
+    .style("stop-color", "#ce6262")
+    .style("stop-opacity", 0.5)
+    .attr("class", "player");
+
+  player
+    .append("path")
+    .datum([...coords])
+    .attr(
+      "d",
+      d3
+        .line()
+        .curve(d3.curveCatmullRomClosed)
+        .x((d) => d.x)
+        .y((d) => d.y),
+    )
+    .attr("stroke-width", 4)
+    .attr("stroke", "#f05454")
+    .attr("fill", "url(#mygrad)")
+    .attr("stroke-opacity", 1)
+    .attr("opacity", 0.5)
+    .attr("class", "player");
+}
 
 // async function init() {
 //   d3.csv("./data/stats.csv").then((data) => {
