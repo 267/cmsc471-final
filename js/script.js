@@ -186,6 +186,8 @@ const data = await d3.csv("data/stats.csv", (d) => ({
 update();
 
 function update() {
+  console.log(data);
+  console.log(d3.max(data, (d) => d.ab));
   const t = 1000;
   const currentData = data.filter((d) => !isNaN(d[xVar]) && !isNaN(d[yVar]));
 
@@ -197,7 +199,7 @@ function update() {
     .domain([
       Math.min(
         0,
-        d3.min(currentData, (d) => d[xVar]),
+        d3.min(currentData, (d) => d[xVar])
       ),
       d3.max(currentData, (d) => d[xVar]),
     ])
@@ -214,7 +216,7 @@ function update() {
     .domain([
       Math.min(
         0,
-        d3.min(currentData, (d) => d[yVar]),
+        d3.min(currentData, (d) => d[yVar])
       ),
       d3.max(currentData, (d) => d[yVar]),
     ])
@@ -284,7 +286,7 @@ function update() {
           .attr("cy", (d) => yScale(d[yVar]))
           .attr("r", 5),
       // .style("fill", (d) => colors(d.batting_average)),
-      (exit) => exit.transition(t).attr("r", 0).remove(),
+      (exit) => exit.transition(t).attr("r", 0).remove()
     );
 }
 
@@ -311,6 +313,28 @@ function showPlayer(d) {
     b: d.avg_best_speed / 150,
     c: d.avg_hyper_speed / 150,
   };
+
+  function powerHitterFocus(d) {
+    const hrRate = 0; // hr / ab
+    const kRate = 0; // k_percent
+    const slgRate = 0; // slg_percent
+    const xSlgRate = 0; //  slg_percent
+    const exit_velo_avg = 0; // exit_velocity_avg / max exit_velocity_avg
+    const barrel_rate = 0; // barrel_batted_rate
+    const whiff_perc = 0; // 1 - whiff_percent
+  }
+
+  function contactHitterFocus(d) {
+    const ba = 0; // Batting Average
+    const xBA = 0; // expected Batting Average
+    const obp = 0; // obp
+    const xobp = 0; // xobp
+    const xwoba = 0; // xwoba
+    const woba = 0; // woba
+    const walk_rate = 0; // bb_percent
+    const kRate = 0; // k_percent
+  }
+
   const features = Object.keys(stats);
 
   let radialScale = d3
@@ -329,7 +353,7 @@ function showPlayer(d) {
       .attr("stroke", "#e8e8e8")
       .attr("stroke-width", "2")
       .attr("r", radialScale(t))
-      .attr("class", "player"),
+      .attr("class", "player")
   );
 
   ticks.forEach((t) =>
@@ -340,7 +364,7 @@ function showPlayer(d) {
       .attr("fill", "#bbbbbb")
       .attr("font-size", "10px")
       .text(t.toString())
-      .attr("class", "player"),
+      .attr("class", "player")
   );
 
   function angleToCoordinate(angle, value) {
@@ -355,6 +379,7 @@ function showPlayer(d) {
     let line_coordinate = angleToCoordinate(angle, 1);
     let label_coordinate = angleToCoordinate(angle, 1.2);
 
+    // Axis Label
     player
       .append("text")
       .attr("text-anchor", "middle")
@@ -366,6 +391,7 @@ function showPlayer(d) {
       .text(features[i])
       .attr("class", "player");
 
+    // Axis Line
     player
       .append("line")
       .attr("x1", player_center.x)
@@ -430,7 +456,7 @@ function showPlayer(d) {
         .line()
         .curve(d3.curveCatmullRomClosed)
         .x((d) => d.x)
-        .y((d) => d.y),
+        .y((d) => d.y)
     )
     .attr("stroke-width", 4)
     .attr("stroke", "#f05454")
