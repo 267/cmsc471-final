@@ -187,6 +187,11 @@ const data = await d3.csv("data/stats.csv", (d) => ({
 
 update();
 
+function zoomin(ev) {
+  svg.select(".axis").call(d3.axisBottom(ev.transform.rescaleX(xScale)));
+  svg.selectAll(".points").attr("cx", (e) => ev.transform.rescaleX(xScale)(e[xVar]));
+}
+
 function update() {
   console.log(data);
   console.log(d3.max(data, (d) => d.ab));
@@ -290,25 +295,11 @@ function update() {
       // .style("fill", (d) => colors(d.batting_average)),
       (exit) => exit.transition(t).attr("r", 0).remove()
     );
-
   var zoom = d3.zoom()
     .scaleExtent([1, 5])
     .extent([[0, 0], [width, height]]) // supposed to cut it off but ??
     .on("zoom", zoomin);
-
-whitespacesvg.call(zoom);
-
-function zoomin(ev) {
-  svg.select(".axis").call(d3.axisBottom(ev.transform.rescaleX(xScale)));
-  svg.selectAll(".points").attr("cx", (e) => ev.transform.rescaleX(xScale)(e[xVar]));
-}
-
-
-
-
-
-
-
+  whitespacesvg.call(zoom);
 }
 
 function showPlayer(d) {
