@@ -66,11 +66,13 @@ const player_width = 360 - player_margin.left - player_margin.right;
 const player_height = 600 - player_margin.top - player_margin.bottom;
 const player_center = { x: player_width / 2, y: player_height / 2 + 40 };
 
-const svg = d3
+const whitespacesvg = d3
   .select("#vis")
   .append("svg")
   .attr("width", width + margin.left + margin.right)
   .attr("height", height + margin.top + margin.bottom)
+
+const svg = whitespacesvg
   .append("g")
   .attr("transform", `translate(${margin.left},${margin.top})`);
 
@@ -288,6 +290,25 @@ function update() {
       // .style("fill", (d) => colors(d.batting_average)),
       (exit) => exit.transition(t).attr("r", 0).remove()
     );
+
+  var zoom = d3.zoom()
+    .scaleExtent([1, 5])
+    .extent([[0, 0], [width, height]]) // supposed to cut it off but ??
+    .on("zoom", zoomin);
+
+whitespacesvg.call(zoom);
+
+function zoomin(ev) {
+  svg.select(".axis").call(d3.axisBottom(ev.transform.rescaleX(xScale)));
+  svg.selectAll(".points").attr("cx", (e) => ev.transform.rescaleX(xScale)(e[xVar]));
+}
+
+
+
+
+
+
+
 }
 
 function showPlayer(d) {
