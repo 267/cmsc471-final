@@ -74,7 +74,7 @@ const whitespacesvg = d3
 
 const zoom = d3
   .zoom()
-  .scaleExtent([1, 5])
+  .scaleExtent([0.5, 5])
   .extent([
     [margin.left, margin.top],
     [width - margin.right, height - margin.bottom],
@@ -83,9 +83,15 @@ const zoom = d3
 
 const svg = whitespacesvg
   .append("g")
-  .attr("fill", "#000000")
   .attr("transform", `translate(${margin.left},${margin.top})`)
   .call(zoom);
+
+svg
+  .append("rect")
+  .attr("fill", "#0000")
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+  .attr("transform", `translate(${-margin.left},${-margin.top})`);
 
 const player = d3
   .select("#player")
