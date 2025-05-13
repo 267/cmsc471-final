@@ -72,9 +72,20 @@ const whitespacesvg = d3
   .attr("width", width + margin.left + margin.right)
   .attr("height", height + margin.top + margin.bottom);
 
+const zoom = d3
+  .zoom()
+  .scaleExtent([1, 5])
+  .extent([
+    [margin.left, margin.top],
+    [width - margin.right, height - margin.bottom],
+  ]) // supposed to cut it off but ??
+  .on("zoom", zoomin);
+
 const svg = whitespacesvg
   .append("g")
-  .attr("transform", `translate(${margin.left},${margin.top})`);
+  .attr("fill", "#000000")
+  .attr("transform", `translate(${margin.left},${margin.top})`)
+  .call(zoom);
 
 const player = d3
   .select("#player")
@@ -88,6 +99,8 @@ let xVar = "ab";
 let yVar = "avg_best_speed";
 let xScale;
 let yScale;
+let xAxis;
+let yAxis;
 
 const options = {
   ab: "At-Bats",
@@ -188,10 +201,12 @@ const data = await d3.csv("data/stats.csv", (d) => ({
 update();
 
 function zoomin(ev) {
-  svg.select(".axis").call(d3.axisBottom(ev.transform.rescaleX(xScale)));
+  svg.select(".x.axis").call(xAxis.scale(ev.transform.rescaleX(xScale)));
+  svg.select(".y.axis").call(yAxis.scale(ev.transform.rescaleY(yScale)));
   svg
     .selectAll(".points")
-    .attr("cx", (e) => ev.transform.rescaleX(xScale)(e[xVar]));
+    .attr("cx", (e) => ev.transform.rescaleX(xScale)(e[xVar]))
+    .attr("cy", (e) => ev.transform.rescaleY(yScale)(e[yVar]));
 }
 
 function update() {
@@ -213,10 +228,10 @@ function update() {
       d3.max(currentData, (d) => d[xVar]),
     ])
     .range([0, width]);
-  const xAxis = d3.axisBottom(xScale);
+  xAxis = d3.axisBottom(xScale);
   svg
     .append("g")
-    .attr("class", "axis")
+    .attr("class", "x axis")
     .attr("transform", `translate(0,${height})`)
     .call(xAxis);
 
@@ -230,8 +245,8 @@ function update() {
       d3.max(currentData, (d) => d[yVar]),
     ])
     .range([height, 0]);
-  const yAxis = d3.axisLeft(yScale);
-  svg.append("g").attr("class", "axis").call(yAxis);
+  yAxis = d3.axisLeft(yScale);
+  svg.append("g").attr("class", "y axis").call(yAxis);
 
   svg
     .append("text")
@@ -267,17 +282,14 @@ function update() {
           .attr("cy", (d) => yScale(d[yVar]))
           // .style("fill", (d) => colors(d.batting_average))
           .style("opacity", 0.5)
-          .style("stroke", "black")
-          .style("stroke-width", "0")
+          .style("stroke-width", "4")
           .on("mouseover", function (event, d) {
             d3.select("#tooltip")
               .style("display", "block")
               .html(`<p>Haiii</p>`)
               .style("left", event.pageX + 20 + "px")
               .style("top", event.pageY - 28 + "px");
-            d3.select(this)
-              .style("strong", "black")
-              .style("stroke-width", "4px");
+            d3.select(this).style("stroke", "black");
             showPlayer(d);
           })
           .on("mouseout", function (event, d) {
@@ -297,15 +309,6 @@ function update() {
       // .style("fill", (d) => colors(d.batting_average)),
       (exit) => exit.transition(t).attr("r", 0).remove(),
     );
-  var zoom = d3
-    .zoom()
-    .scaleExtent([1, 5])
-    .extent([
-      [margin.left, margin.top],
-      [width - margin.right, height - margin.bottom],
-    ]) // supposed to cut it off but ??
-    .on("zoom", zoomin);
-  svg.call(zoom);
 }
 
 function showPlayer(d) {
