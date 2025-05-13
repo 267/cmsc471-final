@@ -306,13 +306,15 @@ function update() {
           .attr("r", 0)
           .transition(t)
           .attr("r", 5),
-      (update) =>
+      (update) => {
         update
           .transition(t)
           .attr("cx", (d) => xScale(d[xVar]))
           .attr("cy", (d) => yScale(d[yVar]))
-          .attr("r", 5),
-      // .style("fill", (d) => colors(d.batting_average)),
+          .attr("r", 5);
+        // .style("fill", (d) => colors(d.batting_average));
+        svg.call(zoom.transform, d3.zoomIdentity);
+      },
       (exit) => exit.transition(t).attr("r", 0).remove(),
     );
 }
