@@ -70,7 +70,7 @@ const whitespacesvg = d3
   .select("#vis")
   .append("svg")
   .attr("width", width + margin.left + margin.right)
-  .attr("height", height + margin.top + margin.bottom)
+  .attr("height", height + margin.top + margin.bottom);
 
 const svg = whitespacesvg
   .append("g")
@@ -189,7 +189,9 @@ update();
 
 function zoomin(ev) {
   svg.select(".axis").call(d3.axisBottom(ev.transform.rescaleX(xScale)));
-  svg.selectAll(".points").attr("cx", (e) => ev.transform.rescaleX(xScale)(e[xVar]));
+  svg
+    .selectAll(".points")
+    .attr("cx", (e) => ev.transform.rescaleX(xScale)(e[xVar]));
 }
 
 function update() {
@@ -206,7 +208,7 @@ function update() {
     .domain([
       Math.min(
         0,
-        d3.min(currentData, (d) => d[xVar])
+        d3.min(currentData, (d) => d[xVar]),
       ),
       d3.max(currentData, (d) => d[xVar]),
     ])
@@ -223,7 +225,7 @@ function update() {
     .domain([
       Math.min(
         0,
-        d3.min(currentData, (d) => d[yVar])
+        d3.min(currentData, (d) => d[yVar]),
       ),
       d3.max(currentData, (d) => d[yVar]),
     ])
@@ -293,13 +295,17 @@ function update() {
           .attr("cy", (d) => yScale(d[yVar]))
           .attr("r", 5),
       // .style("fill", (d) => colors(d.batting_average)),
-      (exit) => exit.transition(t).attr("r", 0).remove()
+      (exit) => exit.transition(t).attr("r", 0).remove(),
     );
-  var zoom = d3.zoom()
+  var zoom = d3
+    .zoom()
     .scaleExtent([1, 5])
-    .extent([[0, 0], [width, height]]) // supposed to cut it off but ??
+    .extent([
+      [margin.left, margin.top],
+      [width - margin.right, height - margin.bottom],
+    ]) // supposed to cut it off but ??
     .on("zoom", zoomin);
-  whitespacesvg.call(zoom);
+  svg.call(zoom);
 }
 
 function showPlayer(d) {
@@ -365,7 +371,7 @@ function showPlayer(d) {
       .attr("stroke", "#e8e8e8")
       .attr("stroke-width", "2")
       .attr("r", radialScale(t))
-      .attr("class", "player")
+      .attr("class", "player"),
   );
 
   ticks.forEach((t) =>
@@ -376,13 +382,12 @@ function showPlayer(d) {
       .attr("fill", "#bbbbbb")
       .attr("font-size", "10px")
       .text(t.toString())
-      .attr("class", "player")
+      .attr("class", "player"),
   );
 
   function angleToCoordinate(angle, value) {
     let x = player_center.x + Math.cos(angle) * radialScale(value);
     let y = player_center.y + Math.sin(angle) * radialScale(value);
-    console.log(x, y);
     return { x, y };
   }
 
@@ -468,7 +473,7 @@ function showPlayer(d) {
         .line()
         .curve(d3.curveCatmullRomClosed)
         .x((d) => d.x)
-        .y((d) => d.y)
+        .y((d) => d.y),
     )
     .attr("stroke-width", 4)
     .attr("stroke", "#f05454")
