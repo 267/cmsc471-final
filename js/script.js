@@ -171,6 +171,7 @@ d3.select("#yVariable").property("value", yVar);
 svg.on("click", () => {
   pinned_player = null;
   showPlayer(null);
+  d3.selectAll(".points").attr("r", 5).style("stroke", "none");
 });
 
 const data = await d3.csv("data/stats.csv", (d) => ({
