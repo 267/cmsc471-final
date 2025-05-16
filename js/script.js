@@ -317,54 +317,22 @@ function update() {
       },
       (exit) => exit.transition(t).attr("r", 0).remove(),
     );
+
+  showPlayer(null);
 }
 
 function showPlayer(d) {
   player.selectAll(".player").remove();
-
-  if (d == null) {
-    return;
-  }
 
   player
     .append("text")
     .attr("x", player_width / 2)
     .attr("y", player_margin.top - 20)
     .attr("text-anchor", "middle")
-    .text(d.name)
+    .text(d?.name ?? "Hover over a player")
     .attr("class", "player");
 
-  // https://observablehq.com/@huangshew/spider-chart/2
-
-  // TODO
-  const stats = {
-    a: d.ab / 800,
-    b: d.avg_best_speed / 150,
-    c: d.avg_hyper_speed / 150,
-  };
-
-  function powerHitterFocus(d) {
-    const hrRate = 0; // hr / ab
-    const kRate = 0; // k_percent
-    const slgRate = 0; // slg_percent
-    const xSlgRate = 0; //  slg_percent
-    const exit_velo_avg = 0; // exit_velocity_avg / max exit_velocity_avg
-    const barrel_rate = 0; // barrel_batted_rate
-    const whiff_perc = 0; // 1 - whiff_percent
-  }
-
-  function contactHitterFocus(d) {
-    const ba = 0; // Batting Average
-    const xBA = 0; // expected Batting Average
-    const obp = 0; // obp
-    const xobp = 0; // xobp
-    const xwoba = 0; // xwoba
-    const woba = 0; // woba
-    const walk_rate = 0; // bb_percent
-    const kRate = 0; // k_percent
-  }
-
-  const features = Object.keys(stats);
+  const features = ["a", "b", "c"];
 
   let radialScale = d3
     .scaleLinear()
@@ -429,6 +397,40 @@ function showPlayer(d) {
       .attr("stroke", "#e8e8e8")
       .attr("stroke-width", "2")
       .attr("class", "player");
+  }
+
+  if (d == null) {
+    return;
+  }
+
+  // https://observablehq.com/@huangshew/spider-chart/2
+
+  // TODO
+  const stats = {
+    a: d.ab / 800,
+    b: d.avg_best_speed / 150,
+    c: d.avg_hyper_speed / 150,
+  };
+
+  function powerHitterFocus(d) {
+    const hrRate = 0; // hr / ab
+    const kRate = 0; // k_percent
+    const slgRate = 0; // slg_percent
+    const xSlgRate = 0; //  slg_percent
+    const exit_velo_avg = 0; // exit_velocity_avg / max exit_velocity_avg
+    const barrel_rate = 0; // barrel_batted_rate
+    const whiff_perc = 0; // 1 - whiff_percent
+  }
+
+  function contactHitterFocus(d) {
+    const ba = 0; // Batting Average
+    const xBA = 0; // expected Batting Average
+    const obp = 0; // obp
+    const xobp = 0; // xobp
+    const xwoba = 0; // xwoba
+    const woba = 0; // woba
+    const walk_rate = 0; // bb_percent
+    const kRate = 0; // k_percent
   }
 
   function getPathCoordinates(data_point) {
