@@ -308,7 +308,11 @@ function update() {
           .on("mouseover", function (event, d) {
             d3.select("#tooltip")
               .style("display", "block")
-              .html(`<p>Haiii</p>`)
+              .html(
+                `<p><b>${d.name}</b></p>
+                 <p>${options[xVar]}: ${d[xVar]}</p>
+                 <p>${options[yVar]}: ${d[yVar]}</p>`,
+              )
               .style("left", event.pageX + 20 + "px")
               .style("top", event.pageY - 28 + "px");
             d3.select(this).attr("r", isPinned(d) ? 8 : 7);
