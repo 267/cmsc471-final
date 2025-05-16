@@ -107,6 +107,7 @@ let xScale;
 let yScale;
 let xAxis;
 let yAxis;
+let pinned_player = null;
 
 const options = {
   ab: "At-Bats",
@@ -167,6 +168,11 @@ d3.selectAll(".variable")
 d3.select("#xVariable").property("value", xVar);
 d3.select("#yVariable").property("value", yVar);
 
+svg.on("click", () => {
+  pinned_player = null;
+  showPlayer(null);
+});
+
 const data = await d3.csv("data/stats.csv", (d) => ({
   name: d["last_name, first_name"],
   player_id: d.player_id,
@@ -215,10 +221,19 @@ function zoomin(ev) {
     .attr("cy", (e) => ev.transform.rescaleY(yScale)(e[yVar]));
 }
 
+function isPinned(d) {
+  return d.player_id === pinned_player?.player_id;
+}
+
+function stroke(d) {
+  return isPinned(d) ? "red" : "none";
+}
+
 function update() {
   console.log(data);
   console.log(d3.max(data, (d) => d.ab));
   const t = 1000;
+
   const currentData = data.filter((d) => !isNaN(d[xVar]) && !isNaN(d[yVar]));
 
   svg.selectAll(".axis").remove();
@@ -288,20 +303,33 @@ function update() {
           .attr("cy", (d) => yScale(d[yVar]))
           // .style("fill", (d) => colors(d.batting_average))
           .style("opacity", 0.5)
-          .style("stroke-width", "4")
+          .style("stroke", stroke)
+          .style("stroke-width", "2")
           .on("mouseover", function (event, d) {
             d3.select("#tooltip")
               .style("display", "block")
               .html(`<p>Haiii</p>`)
               .style("left", event.pageX + 20 + "px")
               .style("top", event.pageY - 28 + "px");
-            d3.select(this).style("stroke", "black");
+            d3.select(this).attr("r", isPinned(d) ? 8 : 7);
             showPlayer(d);
           })
           .on("mouseout", function (event, d) {
             d3.select("#tooltip").style("display", "none");
-            d3.select(this).style("stroke", "none");
-            showPlayer(null);
+            d3.select(this).attr("r", isPinned(d) ? 6 : 5);
+            showPlayer(pinned_player);
+          })
+          .on("click", function (event, d) {
+            event.stopPropagation();
+            if (isPinned(d)) {
+              pinned_player = null;
+              d3.select(this).attr("r", 7).style("stroke", "none");
+            } else {
+              pinned_player = d;
+              d3.selectAll(".points")
+                .attr("r", (d) => (isPinned(d) ? 8 : 5))
+                .style("stroke", stroke);
+            }
           })
           .attr("r", 0)
           .transition(t)
@@ -318,7 +346,7 @@ function update() {
       (exit) => exit.transition(t).attr("r", 0).remove(),
     );
 
-  showPlayer(null);
+  showPlayer(pinned_player);
 }
 
 function showPlayer(d) {
