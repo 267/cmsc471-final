@@ -211,6 +211,83 @@ const data = await d3.csv("data/stats.csv", (d) => ({
   sprint_speed: parseFloat(d.sprint_speed),
 }));
 
+const maxExitVelo = d3.max(data, (d) => d.exit_velocity_avg);
+function powerHitterFocus(d) {
+  const hrRate = d.home_run / d.pa; // hr / ab
+  const kRate = 1 - d.k_percent / 100; // 1 - k_percent
+  const slgRate = d.slg_percent; // slg_percent
+  const xSlgRate = d.xslg; //  slg_percent
+  const exit_velo_avg = d.exit_velocity_avg / maxExitVelo; // exit_velocity_avg / max exit_velocity_avg
+  const barrel_rate = d.barrel_batted_rate; // barrel_batted_rate
+  const whiff_perc = 1 - d.whiff_percent / 100; // 1 - whiff_percent
+  const hardHitPerc = d.hard_hit_percentage;
+  const launcgAngleAvg = d.launch_angle_average;
+
+  console.log(`barrel_rate: ${barrel_rate}\n
+    hrRate: ${hrRate}\n
+    kRate: ${kRate}\n
+    exit_velo_avg: ${exit_velo_avg}\n
+    xSlgRate: ${xSlgRate}\n
+    slgRate: ${slgRate}\n
+    launcgAngleAvg: ${launcgAngleAvg}\n
+    hardHitPerc: ${hardHitPerc}\n
+    whiff_perc: ${whiff_perc}`);
+  return (
+    0.18 * barrel_rate +
+    0.17 * hrRate +
+    0.16 * kRate +
+    0.15 * exit_velo_avg +
+    0.09 * xSlgRate +
+    0.08 * slgRate +
+    0.08 * launcgAngleAvg +
+    0.07 * hardHitPerc +
+    0.02 * whiff_perc
+  );
+}
+
+function contactHitterFocus(d) {
+  const ba = d.batting_average; // Batting Average
+  const xBA = d.xba; // Expected Batting Average
+  const obp = d.on_base_percent; // obp
+  const xobp = d.xobp; // xobp
+  const xwoba = d.xwoba; // xwoba
+  const woba = d.woba; // woba
+  const walk_rate = d.bb_percent; // bb_percent
+  const kRate = 1 - d.k_percent / 100; // 1 - k_percent
+  const obpPlusSlug = d.on_base_plus_slg; // on_base_plus_slg
+
+  console.log(`BA: ${ba}\n
+    xBA: ${xBA}\n
+    obp: ${obp}\n
+    xobp: ${xobp}\n
+    xwoba: ${xwoba}\n
+    walk_rate: ${walk_rate}\n
+    kRate: ${kRate}\n
+    obpPlusSlug: ${obpPlusSlug}`);
+  return (
+    0.18 * ba +
+    0.16 * xBA +
+    0.13 * walk_rate +
+    0.13 * kRate +
+    0.11 * obp +
+    0.11 * xwoba +
+    0.1 * xobp +
+    0.05 * obpPlusSlug +
+    0.03 * woba
+  );
+}
+data.forEach((d) => {
+  d.powerRaw = powerHitterFocus(d);
+  d.contactRaw = contactHitterFocus(d);
+});
+
+const maxPowerRaw = d3.max(data, (d) => d.powerRaw);
+const maxContaxtRaw = d3.max(data, (d) => d.contactRaw);
+
+data.forEach((d) => {
+  d.powerScore = d.powerRaw / maxPowerRaw;
+  d.contactScore = d.contactRaw / maxContaxtRaw;
+});
 update();
 
 function zoomin(ev) {
@@ -245,7 +322,7 @@ function update() {
     .domain([
       Math.min(
         0,
-        d3.min(currentData, (d) => d[xVar]),
+        d3.min(currentData, (d) => d[xVar])
       ),
       d3.max(currentData, (d) => d[xVar]),
     ])
@@ -262,7 +339,7 @@ function update() {
     .domain([
       Math.min(
         0,
-        d3.min(currentData, (d) => d[yVar]),
+        d3.min(currentData, (d) => d[yVar])
       ),
       d3.max(currentData, (d) => d[yVar]),
     ])
@@ -312,7 +389,7 @@ function update() {
               .html(
                 `<p><b>${d.name}</b></p>
                  <p>${options[xVar]}: ${d[xVar]}</p>
-                 <p>${options[yVar]}: ${d[yVar]}</p>`,
+                 <p>${options[yVar]}: ${d[yVar]}</p>`
               )
               .style("left", event.pageX + 20 + "px")
               .style("top", event.pageY - 28 + "px");
@@ -348,7 +425,7 @@ function update() {
         // .style("fill", (d) => colors(d.batting_average));
         svg.call(zoom.transform, d3.zoomIdentity);
       },
-      (exit) => exit.transition(t).attr("r", 0).remove(),
+      (exit) => exit.transition(t).attr("r", 0).remove()
     );
 
   showPlayer(pinned_player);
@@ -356,6 +433,8 @@ function update() {
 
 function showPlayer(d) {
   player.selectAll(".player").remove();
+  console.log(d.contactScore);
+  console.log(d.powerScore);
 
   player
     .append("text")
@@ -383,7 +462,7 @@ function showPlayer(d) {
       .attr("stroke", "#e8e8e8")
       .attr("stroke-width", "2")
       .attr("r", radialScale(t))
-      .attr("class", "player"),
+      .attr("class", "player")
   );
 
   ticks.forEach((t) =>
@@ -394,7 +473,7 @@ function showPlayer(d) {
       .attr("fill", "#bbbbbb")
       .attr("font-size", "10px")
       .text(t.toString())
-      .attr("class", "player"),
+      .attr("class", "player")
   );
 
   function angleToCoordinate(angle, value) {
@@ -439,33 +518,16 @@ function showPlayer(d) {
   // https://observablehq.com/@huangshew/spider-chart/2
 
   // TODO
+  // const stats = {
+  //   a: d.ab / 800,
+  //   b: d.avg_best_speed / 150,
+  //   c: d.avg_hyper_speed / 150,
+  // };
   const stats = {
-    a: d.ab / 800,
-    b: d.avg_best_speed / 150,
-    c: d.avg_hyper_speed / 150,
+    a: d.avg_hyper_speed / d3.max(data, (d) => d.avg_hyper_speed),
+    b: d.powerScore,
+    c: d.contactScore,
   };
-
-  function powerHitterFocus(d) {
-    const hrRate = 0; // hr / ab
-    const kRate = 0; // k_percent
-    const slgRate = 0; // slg_percent
-    const xSlgRate = 0; //  slg_percent
-    const exit_velo_avg = 0; // exit_velocity_avg / max exit_velocity_avg
-    const barrel_rate = 0; // barrel_batted_rate
-    const whiff_perc = 0; // 1 - whiff_percent
-  }
-
-  function contactHitterFocus(d) {
-    const ba = 0; // Batting Average
-    const xBA = 0; // expected Batting Average
-    const obp = 0; // obp
-    const xobp = 0; // xobp
-    const xwoba = 0; // xwoba
-    const woba = 0; // woba
-    const walk_rate = 0; // bb_percent
-    const kRate = 0; // k_percent
-  }
-
   function getPathCoordinates(data_point) {
     let coordinates = [];
     for (var i = 0; i < features.length; i++) {
@@ -519,7 +581,7 @@ function showPlayer(d) {
         .line()
         .curve(d3.curveCatmullRomClosed)
         .x((d) => d.x)
-        .y((d) => d.y),
+        .y((d) => d.y)
     )
     .attr("stroke-width", 4)
     .attr("stroke", "#f05454")
