@@ -21,7 +21,7 @@
   * launch_angle_average --> Sum of all launch angles (except bunts) / # of Batted Ball Events
   * on_base_percent --> How frequently a player reaches base per plate appearance (does not include errors)
   * on_base_plus_slg --> Adds on base percentage plus slugging percentage (Total # of bases a player 
-    records per at-bat. Does not incude wlaks and hit-by-pitches).
+    records per at-bat. Does not incude walks and hit-by-pitches).
   * pa --> # of turns at the plate and a result between a batter and pitcher is obtained.
   * slg_percent --> Total # of bases a player records per at-bat (hits are not valued Equally). 
     * Formula = (# of singles + # of doubles * 2 + # of triples * 3 + # of Home Runs * 4)/AB
@@ -36,7 +36,7 @@
     how much that event is worth in relation to projected runs scored
   * xba --> Expected Batting Average: the likelihood that a batted ball will become a hit based on exit 
     velocity, launch angle, on certin types of batted balls. xBA is given a figure based on balls with similar exit velocities, and launch angle
-  * xobp --> Expected On-base Percentage based on the quality of contact, and the player's speed.
+  * xobp --> Expected On-base Average based on the quality of contact, and the player's speed.
   * xslg --> Expected Slugging, uses exit velocity, launch angle, and Sprint speed on certian types of 
     batted balls. Removes defense from the equation to calcualte quality of contact, instead of actual outcomes
   * xwoba --> Expected Weighted On-Base Percentage, uses same formula as woba but removes defense from the 
@@ -212,12 +212,10 @@ const data = await d3.csv("data/stats.csv", (d) => ({
 }));
 
 const maxExitVelo = d3.max(data, (d) => d.exit_velocity_avg);
-
 const [minLA, maxLA] = d3.extent(data, (d) => d.launch_angle_average);
-
 const laScale = d3.scaleLinear().domain([minLA, maxLA]).range([0, 1]);
 
-const leagueAverageStats = {
+const leagueStats = {
   hrRate: d3.mean(data, (d) => d.home_run / d.pa),
   kAvoidanceRate: d3.mean(data, (d) => d.k_percent / 100),
   slgRate: d3.mean(data, (d) => d.slg_percent),
@@ -249,71 +247,46 @@ function powerHitterFocus(d) {
   const xSlgRate = d.xslg; //  slg_percent
   const exit_velo_avg = d.exit_velocity_avg / maxExitVelo; // exit_velocity_avg / max exit_velocity_avg
   const battedBarrelRate = d.barrel_batted_rate / 100; // barrel_batted_rate
-  const whiff_perc = d.whiff_percent / 100; // 1 - whiff_percent
-  const hardHitPerc = d.hard_hit_percentage / 100;
   const launchAngleAvg = laScale(d.launch_angle_average);
 
-  // if (d.name == "Gallo, Joey" || d.name == "Judge, Aaron" || "Arraez, Luis") {
-  //   console.log(`${d.name}:
-  // battedBarrelRate: ${battedBarrelRate} | pctAboveLeague: ${pctAbove(
-  //     battedBarrelRate,
-  //     leagueAverageStats.battedBarrelRate
-  //   )}
-  // hrRate: ${hrRate} | pctAboveLeague: ${pctAbove(
-  //     hrRate,
-  //     leagueAverageStats.hrRate
-  //   )}
-  // kAvoidanceRate: ${kAvoidanceRate} | pctAboveLeague: ${pctAbove(
-  //     kAvoidanceRate,
-  //     leagueAverageStats.kAvoidanceRate
-  //   )}
-  // exit_velo_avg: ${exit_velo_avg} | pctAboveLeague: ${pctAbove(
-  //     exit_velo_avg,
-  //     leagueAverageStats.exit_velo_avg
-  //   )}
-  // xSlgRate: ${xSlgRate} | pctAboveLeague: ${pctAbove(
-  //     xSlgRate,
-  //     leagueAverageStats.xSlgRate
-  //   )}
-  // slgRate: ${slgRate} | pctAboveLeague: ${pctAbove(
-  //     slgRate,
-  //     leagueAverageStats.slgRate
-  //   )}
-  // launchAngleAvg: ${launchAngleAvg} | pctAboveLeague: ${pctAbove(
-  //     launchAngleAvg,
-  //     leagueAverageStats.launchAngleAvg
-  //   )}
-  // hardHitPerc: ${hardHitPerc} | pctAboveLeague: ${pctAbove(
-  //     hardHitPerc,
-  //     leagueAverageStats.hardHitPerc
-  //   )}
-  // whiff_perc: ${whiff_perc} | pctAboveLeague: ${pctAbove(
-  //     whiff_perc,
-  //     leagueAverageStats.whiff_perc
-  //   )}`);
-  // }
-
-  // return (
-  //   0.18 * battedBarrelRate +
-  //   0.17 * hrRate +
-  //   0.16 * kAvoidanceRate +
-  //   0.15 * exit_velo_avg +
-  //   0.09 * xSlgRate +
-  //   0.08 * slgRate +
-  //   0.08 * launchAngleAvg +
-  //   0.07 * hardHitPerc +
-  //   0.02 * whiff_perc
-  // );
+  if (
+    d.name == "Gallo, Joey" ||
+    d.name == "Judge, Aaron" ||
+    d.name == "Arraez, Luis"
+  ) {
+    console.log(`${d.name}:
+  battedBarrelRate: ${battedBarrelRate} | pctAboveLeague: ${pctAbove(
+      battedBarrelRate,
+      leagueStats.battedBarrelRate
+    )}
+  hrRate: ${hrRate} | pctAboveLeague: ${pctAbove(hrRate, leagueStats.hrRate)}
+  kAvoidanceRate: ${kAvoidanceRate} | pctAboveLeague: ${pctAbove(
+      kAvoidanceRate,
+      leagueStats.kAvoidanceRate
+    )}
+  exit_velo_avg: ${exit_velo_avg} | pctAboveLeague: ${pctAbove(
+      exit_velo_avg,
+      leagueStats.exit_velo_avg
+    )}
+  xSlgRate: ${xSlgRate} | pctAboveLeague: ${pctAbove(
+      xSlgRate,
+      leagueStats.xSlgRate
+    )}
+  slgRate: ${slgRate} | pctAboveLeague: ${pctAbove(
+      slgRate,
+      leagueStats.slgRate
+    )}`);
+  }
   return (
-    0.18 * pctAbove(battedBarrelRate, leagueAverageStats.battedBarrelRate) +
-    0.17 * pctAbove(hrRate, leagueAverageStats.hrRate) +
-    0.16 * pctAbove(kAvoidanceRate, leagueAverageStats.kAvoidanceRate) +
-    0.15 * pctAbove(exit_velo_avg, leagueAverageStats.exit_velo_avg) +
-    0.09 * pctAbove(xSlgRate, leagueAverageStats.xSlgRate) +
-    0.08 * pctAbove(slgRate, leagueAverageStats.slgRate) +
-    0.08 * pctAbove(launchAngleAvg, leagueAverageStats.launchAngleAvg) +
-    0.07 * pctAbove(hardHitPerc, leagueAverageStats.hardHitPerc) +
-    0.02 * pctAbove(whiff_perc, leagueAverageStats.whiff_perc)
+    // SKILL RATING WITH NO DEFENSIVE IMPACT (0.10)
+    0.1 * pctAbove(kAvoidanceRate, leagueStats.kAvoidanceRate) +
+    // OUTCOME, DEFENSE DEPENDENT RESULTS (0.05)
+    0.05 * pctAbove(slgRate, leagueStats.slgRate) +
+    // POWER SKILLS (0.8)
+    0.35 * pctAbove(battedBarrelRate, leagueStats.battedBarrelRate) +
+    0.2 * pctAbove(exit_velo_avg, leagueStats.exit_velo_avg) +
+    0.2 * pctAbove(xSlgRate, leagueStats.xSlgRate) +
+    0.05 * pctAbove(hrRate, leagueStats.hrRate)
   );
 }
 
@@ -324,49 +297,42 @@ function contactHitterFocus(d) {
   const xobp = d.xobp; // xobp
   const xwoba = d.xwoba; // xwoba
   const woba = d.woba; // woba
-  const walk_rate = d.bb_percent / 100; // bb_percent
+  // const walk_rate = d.bb_percent / 100; // bb_percent
   const kAvoidanceRate = 1 - d.k_percent / 100; // 1 - k_percent
-  const obpPlusSlug = d.on_base_plus_slg; // on_base_plus_slg
 
-  if (
-    d.name === "Arraez, Luis" ||
-    d.name == "Gallo, Joey" ||
-    d.name == "Judge, Aaron"
-  ) {
-    console.log(`${d.name}:
-  BA: ${ba} | pctAboveLeague: ${pctAbove(ba, leagueAverageStats.ba)}
-  kAvoidanceRate: ${kAvoidanceRate} | pctAboveLeague: ${pctAbove(
-      kAvoidanceRate,
-      leagueAverageStats.kAvoidanceRate
-    )}
-  walk_rate: ${walk_rate} | pctAboveLeague: ${pctAbove(
-      walk_rate,
-      leagueAverageStats.walk_rate
-    )}
-  xBA: ${xBA} | pctAboveLeague: ${pctAbove(xBA, leagueAverageStats.xBA)}
-  obp: ${obp} | pctAboveLeague: ${pctAbove(
-      obp,
-      leagueAverageStats.on_base_percent
-    )}
-  xwoba: ${xwoba} | pctAboveLeague: ${pctAbove(xwoba, leagueAverageStats.xwoba)}
-  xobp: ${xobp} | pctAboveLeague: ${pctAbove(xobp, leagueAverageStats.xobp)}
-  obpPlusSlug: ${obpPlusSlug} | pctAboveLeague: ${pctAbove(
-      obpPlusSlug,
-      leagueAverageStats.obpPlusSlug
-    )}
-  woba: ${woba} | pctAboveLeague: ${pctAbove(woba, leagueAverageStats.woba)}`);
-  }
+  // if (
+  //   d.name === "Arraez, Luis" ||
+  //   d.name == "Gallo, Joey" ||
+  //   d.name == "Judge, Aaron"
+  // ) {
+  //   console.log(`${d.name}:
+  // kAvoidanceRate: ${kAvoidanceRate} | pctAboveLeague: ${pctAbove(
+  //     kAvoidanceRate,
+  //     leagueAverageStats.kAvoidanceRate
+  //   )}
+  // BA: ${ba} | pctAboveLeague: ${pctAbove(ba, leagueAverageStats.ba)}
+  // obp: ${obp} | pctAboveLeague: ${pctAbove(
+  //     obp,
+  //     leagueAverageStats.on_base_percent
+  //   )}
+  // woba: ${woba} | pctAboveLeague: ${pctAbove(woba, leagueAverageStats.woba)}
+  // xBA: ${xBA} | pctAboveLeague: ${pctAbove(xBA, leagueAverageStats.xBA)}
+  // xwoba: ${xwoba} | pctAboveLeague: ${pctAbove(xwoba, leagueAverageStats.xwoba)}
+  // xobp: ${xobp} | pctAboveLeague: ${pctAbove(xobp, leagueAverageStats.xobp)}`);
+  // }
 
   return (
-    0.17 * pctAbove(ba, leagueAverageStats.ba) +
-    0.15 * pctAbove(xBA, leagueAverageStats.xBA) +
-    0.15 * pctAbove(kAvoidanceRate, leagueAverageStats.kAvoidanceRate) +
-    0.13 * pctAbove(walk_rate, leagueAverageStats.walk_rate) +
-    0.11 * pctAbove(obp, leagueAverageStats.on_base_percent) +
-    0.11 * pctAbove(xwoba, leagueAverageStats.xwoba) +
-    0.1 * pctAbove(xobp, leagueAverageStats.xobp) +
-    0.05 * pctAbove(obpPlusSlug, leagueAverageStats.obpPlusSlug) +
-    0.03 * pctAbove(woba, leagueAverageStats.woba)
+    // SKILL WITH NO DEFENSIVE IMPACT (0.10)
+    0.1 * pctAbove(kAvoidanceRate, leagueStats.kAvoidanceRate) +
+    // 0.15 * pctAbove(walk_rate, leagueAverageStats.walk_rate) +
+    // OUTCOME (0.29)
+    0.1 * pctAbove(ba, leagueStats.ba) +
+    0.1 * pctAbove(obp, leagueStats.on_base_percent) +
+    0.09 * pctAbove(woba, leagueStats.woba) +
+    // EXPECTED OUTCOMES (0.61)
+    0.27 * pctAbove(xBA, leagueStats.xBA) +
+    0.27 * pctAbove(xobp, leagueStats.xobp) +
+    0.07 * pctAbove(xwoba, leagueStats.xwoba)
   );
 }
 
@@ -376,27 +342,28 @@ data.forEach((d) => {
   d.contactRaw = contactHitterFocus(d);
 });
 
-const maxPowerRaw = d3.max(data, (d) => d.powerRaw);
-const maxContaxtRaw = d3.max(data, (d) => d.contactRaw);
+const maxContactRaw = d3.max(data, (d) => d.contactRaw);
+const [minPowerRaw, maxPowerRaw] = d3.extent(data, (d) => d.powerRaw);
+
+const powerScale = d3
+  .scaleLinear()
+  .domain([minPowerRaw, maxPowerRaw])
+  .range([0, 1]);
 
 data.forEach((d) => {
-  d.powerScore = d.powerRaw / maxPowerRaw;
-  d.contactScore = d.contactRaw / maxContaxtRaw;
+  const lin = powerScale(d.powerRaw);
+  d.powerScore = Math.sqrt(lin);
+  d.contactScore = d.contactRaw / maxContactRaw;
 });
-// console.table(
-//   data
-//     .sort((a, b) => b.powerScore - a.powerScore)
-//     .map((d) => ({ NAME: d.name, powerScore: +d.powerScore }))
-// );
 console.table(
   data
-    .sort((a, b) => b.contactScore - a.contactScore)
-    .map((d) => ({ NAME: d.name, contactScore: +d.contactScore }))
+    .sort((a, b) => b.powerScore - a.powerScore)
+    .map((d) => ({ NAME: d.name, powerScore: +d.powerScore }))
 );
 // console.table(
 //   data
-//     .sort((a, b) => b.k_percent - a.k_percent)
-//     .map((d) => ({ NAME: d.name, k_percent: +d.k_percent }))
+//     .sort((a, b) => b.contactScore - a.contactScore)
+//     .map((d) => ({ NAME: d.name, contactScore: +d.contactScore }))
 // );
 update();
 
@@ -552,7 +519,7 @@ function showPlayer(d) {
     .text(d?.name ?? "Hover over a player")
     .attr("class", "player");
 
-  const features = ["a", "b", "c"];
+  const features = ["Plate Discipline", "Power Hitter", "Contact Hitter"];
 
   let radialScale = d3
     .scaleLinear()
@@ -626,15 +593,11 @@ function showPlayer(d) {
   // https://observablehq.com/@huangshew/spider-chart/2
 
   // TODO
-  // const stats = {
-  //   a: d.ab / 800,
-  //   b: d.avg_best_speed / 150,
-  //   c: d.avg_hyper_speed / 150,
-  // };
   const stats = {
-    a: d.avg_hyper_speed / d3.max(data, (d) => d.avg_hyper_speed),
-    b: d.powerScore,
-    c: d.contactScore,
+    "Plate Discipline":
+      d.avg_hyper_speed / d3.max(data, (d) => d.avg_hyper_speed),
+    "Power Hitter": d.powerScore,
+    "Contact Hitter": d.contactScore,
   };
   function getPathCoordinates(data_point) {
     let coordinates = [];
