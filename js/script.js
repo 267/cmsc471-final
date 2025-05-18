@@ -452,10 +452,21 @@ function update() {
     .text(options[yVar])
     .attr("class", "labels");
 
-  const colors = (x) => {
-    // change these eventually
-    return "#000000";
-  };
+  const rgbScale = d3.scaleLinear([0, 255]);
+  const sScale = d3.scaleLinear([0, 0.75]);
+  const lScale = d3.scaleLinear([0.75, 0]);
+  function color(d) {
+    let c = d3.hsl(
+      d3.rgb(
+        rgbScale(d.powerScore),
+        rgbScale(d.contactScore),
+        rgbScale(d.plateDisciplineScore),
+      ),
+    );
+    c.s = sScale(c.s);
+    c.l = lScale(c.l);
+    return c;
+  }
 
   svg
     .selectAll(".points")
@@ -467,7 +478,7 @@ function update() {
           .attr("class", "points")
           .attr("cx", (d) => xScale(d[xVar]))
           .attr("cy", (d) => yScale(d[yVar]))
-          // .style("fill", (d) => colors(d.batting_average))
+          .style("fill", color)
           .style("opacity", 0.5)
           .style("stroke", stroke)
           .style("stroke-width", "2")
@@ -509,8 +520,8 @@ function update() {
           .transition(t)
           .attr("cx", (d) => xScale(d[xVar]))
           .attr("cy", (d) => yScale(d[yVar]))
-          .attr("r", 5);
-        // .style("fill", (d) => colors(d.batting_average));
+          .attr("r", 5)
+          .style("fill", color);
         svg.call(zoom.transform, d3.zoomIdentity);
       },
       (exit) => exit.transition(t).attr("r", 0).remove(),
