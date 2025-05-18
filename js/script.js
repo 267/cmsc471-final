@@ -217,7 +217,7 @@ const laScale = d3.scaleLinear().domain([minLA, maxLA]).range([0, 1]);
 
 const leagueStats = {
   hrRate: d3.mean(data, (d) => d.home_run / d.ab),
-  kAvoidanceRate: d3.mean(data, (d) => d.k_percent / 100),
+  kAvoidanceRate: d3.mean(data, (d) => 1 - d.k_percent / 100),
   slgRate: d3.mean(data, (d) => d.slg_percent),
   xSlgRate: d3.mean(data, (d) => d.xslg),
   exit_velo_avg: d3.mean(data, (d) => d.exit_velocity_avg / maxExitVelo),
@@ -347,19 +347,26 @@ data.forEach((d) => {
   d.contactRaw = contactHitterFocus(d);
 });
 
-const maxContactRaw = d3.max(data, (d) => d.contactRaw);
+// const maxContactRaw = d3.max(data, (d) => d.contactRaw);
+const [minContactRaw, maxContactRaw] = d3.extent(data, (d) => d.contactRaw);
 const [minPowerRaw, maxPowerRaw] = d3.extent(data, (d) => d.powerRaw);
 
 const powerScale = d3
   .scaleLinear()
   .domain([minPowerRaw, maxPowerRaw])
+  .range([0, 1])
+  .clamp(true);
+
+const contactScale = d3
+  .scaleLinear()
+  .domain([minContactRaw, maxContactRaw])
   .range([0, 1]);
 
 data.forEach((d) => {
-  // const lin = powerScale(d.powerRaw);
-  // d.powerScore = Math.sqrt(lin);
-  d.powerScore = powerScale(d.powerRaw);
-  d.contactScore = d.contactRaw / maxContactRaw;
+  const lin = powerScale(d.powerRaw);
+  d.powerScore = Math.pow(lin, 0.73);
+  // d.powerScore = powerScale(d.powerRaw);
+  d.contactScore = contactScale(d.contactRaw);
 });
 console.table(
   data
