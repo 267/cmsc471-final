@@ -258,34 +258,34 @@ function powerHitterFocus(d) {
   ) {
     console.log(`${d.name}:
   battedBarrelRate: ${battedBarrelRate} | pctAboveLeague: ${pctAbove(
-      battedBarrelRate,
-      leagueStats.battedBarrelRate
-    )}
+    battedBarrelRate,
+    leagueStats.battedBarrelRate,
+  )}
   hrRate: ${hrRate} | pctAboveLeague: ${pctAbove(hrRate, leagueStats.hrRate)}
   kAvoidanceRate: ${kAvoidanceRate} | pctAboveLeague: ${pctAbove(
-      kAvoidanceRate,
-      leagueStats.kAvoidanceRate
-    )}
+    kAvoidanceRate,
+    leagueStats.kAvoidanceRate,
+  )}
   exit_velo_avg: ${exit_velo_avg} | pctAboveLeague: ${pctAbove(
-      exit_velo_avg,
-      leagueStats.exit_velo_avg
-    )}
+    exit_velo_avg,
+    leagueStats.exit_velo_avg,
+  )}
   xSlgRate: ${xSlgRate} | pctAboveLeague: ${pctAbove(
-      xSlgRate,
-      leagueStats.xSlgRate
-    )}
+    xSlgRate,
+    leagueStats.xSlgRate,
+  )}
   slgRate: ${slgRate} | pctAboveLeague: ${pctAbove(
-      slgRate,
-      leagueStats.slgRate
-    )}
+    slgRate,
+    leagueStats.slgRate,
+  )}
   launchAngleAvg: ${launchAngleAvg} | pctAboveLeague: ${pctAbove(
-      launchAngleAvg,
-      leagueStats.launchAngleAvg
-    )}
+    launchAngleAvg,
+    leagueStats.launchAngleAvg,
+  )}
   hardHitPerc: ${hardHitPerc} | pctAboveLeague: ${pctAbove(
-      hardHitPerc,
-      leagueStats.hardHitPerc
-    )}`);
+    hardHitPerc,
+    leagueStats.hardHitPerc,
+  )}`);
   }
   return (
     // SKILL RATING WITH NO DEFENSIVE IMPACT (0.10)
@@ -345,7 +345,7 @@ const [minContactRaw, maxContactRaw] = d3.extent(data, (d) => d.contactRaw);
 const [minPowerRaw, maxPowerRaw] = d3.extent(data, (d) => d.powerRaw);
 const [minPlateDisciplineRaw, maxPlateDisciplineRaw] = d3.extent(
   data,
-  (d) => d.plateDisciplineRaw
+  (d) => d.plateDisciplineRaw,
 );
 
 const powerScale = d3
@@ -375,7 +375,7 @@ console.table(
     .map((d) => ({
       NAME: d.name,
       plateDisciplineScore: +d.plateDisciplineScore,
-    }))
+    })),
 );
 update();
 
@@ -410,7 +410,7 @@ function update() {
     .domain([
       Math.min(
         0,
-        d3.min(currentData, (d) => d[xVar])
+        d3.min(currentData, (d) => d[xVar]),
       ),
       d3.max(currentData, (d) => d[xVar]),
     ])
@@ -427,7 +427,7 @@ function update() {
     .domain([
       Math.min(
         0,
-        d3.min(currentData, (d) => d[yVar])
+        d3.min(currentData, (d) => d[yVar]),
       ),
       d3.max(currentData, (d) => d[yVar]),
     ])
@@ -477,7 +477,7 @@ function update() {
               .html(
                 `<p><b>${d.name}</b></p>
                  <p>${options[xVar]}: ${d[xVar]}</p>
-                 <p>${options[yVar]}: ${d[yVar]}</p>`
+                 <p>${options[yVar]}: ${d[yVar]}</p>`,
               )
               .style("left", event.pageX + 20 + "px")
               .style("top", event.pageY - 28 + "px");
@@ -513,7 +513,7 @@ function update() {
         // .style("fill", (d) => colors(d.batting_average));
         svg.call(zoom.transform, d3.zoomIdentity);
       },
-      (exit) => exit.transition(t).attr("r", 0).remove()
+      (exit) => exit.transition(t).attr("r", 0).remove(),
     );
 
   showPlayer(pinned_player);
@@ -548,7 +548,7 @@ function showPlayer(d) {
       .attr("stroke", "#e8e8e8")
       .attr("stroke-width", "2")
       .attr("r", radialScale(t))
-      .attr("class", "player")
+      .attr("class", "player"),
   );
 
   ticks.forEach((t) =>
@@ -559,7 +559,7 @@ function showPlayer(d) {
       .attr("fill", "#bbbbbb")
       .attr("font-size", "10px")
       .text(t.toString())
-      .attr("class", "player")
+      .attr("class", "player"),
   );
 
   function angleToCoordinate(angle, value) {
@@ -644,9 +644,9 @@ function showPlayer(d) {
         .line()
         .curve(d3.curveCatmullRomClosed)
         .x((p) => p.x)
-        .y((p) => p.y)
+        .y((p) => p.y),
     )
-    .attr("stroke", "#666")
+    .attr("stroke", "#bbb")
     .attr("stroke-width", 2)
     .attr("fill", "white")
     .attr("fill-opacity", 0.2);
@@ -694,7 +694,7 @@ function showPlayer(d) {
         .line()
         .curve(d3.curveCatmullRomClosed)
         .x((d) => d.x)
-        .y((d) => d.y)
+        .y((d) => d.y),
     )
     .attr("stroke-width", 4)
     .attr("stroke", "#f05454")
