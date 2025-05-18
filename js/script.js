@@ -216,7 +216,7 @@ const [minLA, maxLA] = d3.extent(data, (d) => d.launch_angle_average);
 const laScale = d3.scaleLinear().domain([minLA, maxLA]).range([0, 1]);
 
 const leagueStats = {
-  hrRate: d3.mean(data, (d) => d.home_run / d.pa),
+  hrRate: d3.mean(data, (d) => d.home_run / d.ab),
   kAvoidanceRate: d3.mean(data, (d) => d.k_percent / 100),
   slgRate: d3.mean(data, (d) => d.slg_percent),
   xSlgRate: d3.mean(data, (d) => d.xslg),
@@ -241,7 +241,7 @@ function pctAbove(val, mean) {
 }
 
 function powerHitterFocus(d) {
-  const hrRate = d.home_run / d.pa; // hr / ab
+  const hrRate = d.home_run / d.ab; // hr / ab
   const kAvoidanceRate = 1 - d.k_percent / 100; // 1 - k_percent
   const slgRate = d.slg_percent; // slg_percent
   const xSlgRate = d.xslg; //  slg_percent
@@ -275,6 +275,10 @@ function powerHitterFocus(d) {
   slgRate: ${slgRate} | pctAboveLeague: ${pctAbove(
       slgRate,
       leagueStats.slgRate
+    )}
+  launchAngleAvg: ${launchAngleAvg} | pctAboveLeague: ${pctAbove(
+      launchAngleAvg,
+      leagueStats.launchAngleAvg
     )}`);
   }
   return (
@@ -283,9 +287,10 @@ function powerHitterFocus(d) {
     // OUTCOME, DEFENSE DEPENDENT RESULTS (0.05)
     0.05 * pctAbove(slgRate, leagueStats.slgRate) +
     // POWER SKILLS (0.8)
-    0.35 * pctAbove(battedBarrelRate, leagueStats.battedBarrelRate) +
-    0.2 * pctAbove(exit_velo_avg, leagueStats.exit_velo_avg) +
-    0.2 * pctAbove(xSlgRate, leagueStats.xSlgRate) +
+    0.325 * pctAbove(battedBarrelRate, leagueStats.battedBarrelRate) +
+    0.225 * pctAbove(exit_velo_avg, leagueStats.exit_velo_avg) +
+    0.1 * pctAbove(xSlgRate, leagueStats.xSlgRate) +
+    0.1 * pctAbove(launchAngleAvg, leagueStats.launchAngleAvg) +
     0.05 * pctAbove(hrRate, leagueStats.hrRate)
   );
 }
@@ -351,8 +356,9 @@ const powerScale = d3
   .range([0, 1]);
 
 data.forEach((d) => {
-  const lin = powerScale(d.powerRaw);
-  d.powerScore = Math.sqrt(lin);
+  // const lin = powerScale(d.powerRaw);
+  // d.powerScore = Math.sqrt(lin);
+  d.powerScore = powerScale(d.powerRaw);
   d.contactScore = d.contactRaw / maxContactRaw;
 });
 console.table(
