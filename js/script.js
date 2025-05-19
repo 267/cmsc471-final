@@ -52,12 +52,6 @@
   * sprint_speed --> how many feet per second a player runs in his fastest one-second window.
 */
 
-/*
-TODO:
-Main plot: scatterplot with axis being the above options from the csv file
-Secondary plot: Hoving over datapoint gives a spider plot for the given player and all their relevant stats above
-*/
-
 const margin = { top: 80, right: 60, bottom: 60, left: 100 };
 const width = 800 - margin.left - margin.right;
 const height = 600 - margin.top - margin.bottom;
@@ -78,8 +72,8 @@ const zoom = d3
   .extent([
     [margin.left, margin.top],
     [width - margin.right, height - margin.bottom],
-  ]) // supposed to cut it off but ??
-  .on("zoom", zoomin);
+  ])
+  .on("zoom", zoomIn);
 
 const svg = whitespacesvg
   .append("g")
@@ -308,7 +302,7 @@ const [minContactRaw, maxContactRaw] = d3.extent(data, (d) => d.contactRaw);
 const [minPowerRaw, maxPowerRaw] = d3.extent(data, (d) => d.powerRaw);
 const [minPlateDisciplineRaw, maxPlateDisciplineRaw] = d3.extent(
   data,
-  (d) => d.plateDisciplineRaw
+  (d) => d.plateDisciplineRaw,
 );
 
 const powerScale = d3
@@ -353,7 +347,7 @@ const contactHittingList = data
   }));
 update();
 
-function zoomin(ev) {
+function zoomIn(ev) {
   svg.select(".x.axis").call(xAxis.scale(ev.transform.rescaleX(xScale)));
   svg.select(".y.axis").call(yAxis.scale(ev.transform.rescaleY(yScale)));
   svg
@@ -371,7 +365,6 @@ function stroke(d) {
 }
 
 function update() {
-  console.log(data);
   const t = 1000;
 
   const currentData = data.filter((d) => !isNaN(d[xVar]) && !isNaN(d[yVar]));
@@ -384,7 +377,7 @@ function update() {
     .domain([
       Math.min(
         0,
-        d3.min(currentData, (d) => d[xVar])
+        d3.min(currentData, (d) => d[xVar]),
       ),
       d3.max(currentData, (d) => d[xVar]),
     ])
@@ -401,7 +394,7 @@ function update() {
     .domain([
       Math.min(
         0,
-        d3.min(currentData, (d) => d[yVar])
+        d3.min(currentData, (d) => d[yVar]),
       ),
       d3.max(currentData, (d) => d[yVar]),
     ])
@@ -434,8 +427,8 @@ function update() {
       d3.rgb(
         rgbScale(d.powerScore),
         rgbScale(d.contactScore),
-        rgbScale(d.plateDisciplineScore)
-      )
+        rgbScale(d.plateDisciplineScore),
+      ),
     );
     c.s = sScale(c.s);
     c.l = lScale(c.l);
@@ -464,18 +457,18 @@ function update() {
                  <p>${options[xVar]}: ${d[xVar]}</p>
                  <p>${options[yVar]}: ${d[yVar]}</p>
                  <p>Power Hitting Score: ${d.powerScore.toFixed(5)} | Rank: (${
-                  powerHittingList.findIndex((j) => j.NAME == d.name) + 1
-                } of ${powerHittingList.length})</p>
+                   powerHittingList.findIndex((j) => j.NAME == d.name) + 1
+                 } of ${powerHittingList.length})</p>
                  <p>Contact Hitting Score: ${d.contactScore.toFixed(
-                   5
+                   5,
                  )} | Rank: (${
-                  contactHittingList.findIndex((j) => j.NAME == d.name) + 1
-                } of ${contactHittingList.length})</p>
+                   contactHittingList.findIndex((j) => j.NAME == d.name) + 1
+                 } of ${contactHittingList.length})</p>
                  <p>Plate Discipline Score: ${d.plateDisciplineScore.toFixed(
-                   5
+                   5,
                  )} | Rank: (${
-                  plateDiscList.findIndex((j) => j.NAME == d.name) + 1
-                } of ${plateDiscList.length})</p>`
+                   plateDiscList.findIndex((j) => j.NAME == d.name) + 1
+                 } of ${plateDiscList.length})</p>`,
               )
               .style("left", event.pageX + 20 + "px")
               .style("top", event.pageY - 28 + "px");
@@ -511,7 +504,7 @@ function update() {
           .style("fill", color);
         svg.call(zoom.transform, d3.zoomIdentity);
       },
-      (exit) => exit.transition(t).attr("r", 0).remove()
+      (exit) => exit.transition(t).attr("r", 0).remove(),
     );
 
   showPlayer(pinned_player);
@@ -546,7 +539,7 @@ function showPlayer(d) {
       .attr("stroke", "#e8e8e8")
       .attr("stroke-width", "2")
       .attr("r", radialScale(t))
-      .attr("class", "player")
+      .attr("class", "player"),
   );
 
   ticks.forEach((t) =>
@@ -557,7 +550,7 @@ function showPlayer(d) {
       .attr("fill", "#bbbbbb")
       .attr("font-size", "10px")
       .text(t.toString())
-      .attr("class", "player")
+      .attr("class", "player"),
   );
 
   function angleToCoordinate(angle, value) {
@@ -566,7 +559,7 @@ function showPlayer(d) {
     return { x, y };
   }
 
-  for (var i = 0; i < features.length; i++) {
+  for (let i = 0; i < features.length; i++) {
     let angle = Math.PI / 2 + (2 * Math.PI * i) / features.length;
     let line_coordinate = angleToCoordinate(angle, 1);
     let label_coordinate = angleToCoordinate(angle, 1.2);
@@ -601,7 +594,6 @@ function showPlayer(d) {
 
   // https://observablehq.com/@huangshew/spider-chart/2
 
-  // TODO
   const stats = {
     "Plate Discipline": d.plateDisciplineScore,
     "Power Hitter": d.powerScore,
@@ -613,10 +605,9 @@ function showPlayer(d) {
     "Contact Hitter": d3.mean(data, (dd) => dd.contactScore),
   };
 
-  // console.log(Object.keys(leagueAvgStats));
   function getPathCoordinates(data_point) {
     let coordinates = [];
-    for (var i = 0; i < features.length; i++) {
+    for (let i = 0; i < features.length; i++) {
       let ft_name = features[i];
       let angle = Math.PI / 2 + (2 * Math.PI * i) / features.length;
       coordinates.push(angleToCoordinate(angle, data_point[ft_name]));
@@ -624,7 +615,6 @@ function showPlayer(d) {
     return coordinates;
   }
   const coords = getPathCoordinates(stats);
-  console.log(coords);
 
   coords.forEach((d) => {
     player
@@ -636,7 +626,7 @@ function showPlayer(d) {
       .attr("class", "player");
   });
 
-  var lg = player
+  let lg = player
     .append("defs")
     .append("linearGradient")
     .attr("id", "mygrad")
@@ -667,7 +657,7 @@ function showPlayer(d) {
         .line()
         .curve(d3.curveCatmullRomClosed)
         .x((d) => d.x)
-        .y((d) => d.y)
+        .y((d) => d.y),
     )
     .attr("stroke-width", 4)
     .attr("stroke", "#f05454")
@@ -677,32 +667,6 @@ function showPlayer(d) {
     .attr("class", "player");
 
   const leagueCoords = getPathCoordinates(leagueAvgStats);
-  // features.forEach((featureName, i) => {
-  //   const pt = leagueCoords[i];
-  //   const avgValue = leagueAvgStats[featureName];
-  //   player
-  //     .append("circle")
-  //     .attr("class", "player")
-  //     .attr("r", 3.7)
-  //     .attr("fill", "#888")
-  //     .attr("cx", pt.x)
-  //     .attr("cy", pt.y)
-  //     .on("mouseover", function (event, d) {
-  //       d3.select("#tooltip")
-  //         .style("display", "block")
-  //         .html(
-  //           `<p><strong>${featureName}</strong></p>
-  //            <p>Average: ${avgValue.toFixed(5)}</p>`
-  //         )
-  //         .style("left", event.pageX - 39 + "px")
-  //         .style("top", event.pageY + 14 + "px");
-  //       d3.select(this).attr("r", 4);
-  //     })
-  //     .on("mouseout", function (event, d) {
-  //       d3.select("#tooltip").style("display", "none");
-  //       d3.select(this).attr("r", 3.7);
-  //     });
-  // });
 
   player
     .append("path")
@@ -714,7 +678,7 @@ function showPlayer(d) {
         .line()
         .curve(d3.curveCatmullRomClosed)
         .x((p) => p.x)
-        .y((p) => p.y)
+        .y((p) => p.y),
     )
     .attr("stroke", "#aaa")
     .attr("stroke-width", 1)
@@ -735,7 +699,7 @@ function showPlayer(d) {
           .style("display", "block")
           .html(
             `<p><strong>${featureName}</strong></p>
-             <p>Average: ${avgValue.toFixed(5)}</p>`
+             <p>Average: ${avgValue.toFixed(5)}</p>`,
           )
           .style("left", event.pageX - 39 + "px")
           .style("top", event.pageY + 14 + "px");
@@ -747,12 +711,3 @@ function showPlayer(d) {
       });
   });
 }
-
-// async function init() {
-//   d3.csv("./data/stats.csv").then((data) => {
-//     const sortedCols = data.columns.slice().sort((a, b) => a.localeCompare(b));
-//     console.log(sortedCols);
-//   });
-// }
-
-// window.addEventListener("load", init);
