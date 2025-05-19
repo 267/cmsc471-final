@@ -10,8 +10,23 @@
 
 <body>
   <div id="tooltip" style="display: none"></div>
+  
   <div class="container">
     <h1>Not Another BST: The Baseball Skill Tree</h1>
+    <hr>
+    <p id="maintext">
+      <b>Main Scatter Plot<br></b>
+      Choose out of 30+ different statistics on the X and Y axis to automatically plot over 300 different players represented as datapoints below.<br>
+      In terms of color scale, red signifies a power hitter, green signifies a contact hitter, and blue signifies more plate discipline. These three mix into the the presented color and provide a spectrum for the datapoints.<br>
+      Feel free to scroll, drag and click within the plot to navigate it more effectively. Hovering and clicking on the datapoint gives you more insights along with populating the radar plot alongside the scatterplot. <br>
+      <hr>
+      <b>Radar Plot<br></b>
+      The radar plot graphs selected players on three axes: <br>
+      Plate Discipline: How good/bad a hitter is at striking out, drawing walks, and whiffing (swinging and missing) at pitches. <br>
+      Contact Hitter: How good/bad a player is at making contact with the ball that gets them on base. <br>
+      Power Hitter: How good/bad a player is at hitting a ball with power. <br>
+    </p>
+    <hr>
     <div id="controls">
       X: <select id="xVariable" class="variable"></select>
       Y: <select id="yVariable" class="variable"></select>
@@ -21,6 +36,7 @@
       <div id="player"></div>
     <div>
   </div>
+  
 
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="js/script.js" type="module"></script>
