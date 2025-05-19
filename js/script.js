@@ -244,49 +244,12 @@ function pctAbove(val, mean) {
 function powerHitterFocus(d) {
   const hrRate = d.home_run / d.hit; // hr / hits
   const kAvoidanceRate = 1 - d.k_percent / 100; // 1 - k_percent
-  const slgRate = d.slg_percent; // slg_percent
   const xSlgRate = d.xslg; //  slg_percent
   const exit_velo_avg = d.exit_velocity_avg / maxExitVelo; // exit_velocity_avg / max exit_velocity_avg
   const battedBarrelRate = d.barrel_batted_rate / 100; // barrel_batted_rate
   const launchAngleAvg = laScale(d.launch_angle_average);
   const hardHitPerc = d.hard_hit_percentage / 100;
 
-  if (
-    d.name == "Gallo, Joey" ||
-    d.name == "Judge, Aaron" ||
-    d.name == "Arraez, Luis"
-  ) {
-    console.log(`${d.name}:
-  battedBarrelRate: ${battedBarrelRate} | pctAboveLeague: ${pctAbove(
-    battedBarrelRate,
-    leagueStats.battedBarrelRate,
-  )}
-  hrRate: ${hrRate} | pctAboveLeague: ${pctAbove(hrRate, leagueStats.hrRate)}
-  kAvoidanceRate: ${kAvoidanceRate} | pctAboveLeague: ${pctAbove(
-    kAvoidanceRate,
-    leagueStats.kAvoidanceRate,
-  )}
-  exit_velo_avg: ${exit_velo_avg} | pctAboveLeague: ${pctAbove(
-    exit_velo_avg,
-    leagueStats.exit_velo_avg,
-  )}
-  xSlgRate: ${xSlgRate} | pctAboveLeague: ${pctAbove(
-    xSlgRate,
-    leagueStats.xSlgRate,
-  )}
-  slgRate: ${slgRate} | pctAboveLeague: ${pctAbove(
-    slgRate,
-    leagueStats.slgRate,
-  )}
-  launchAngleAvg: ${launchAngleAvg} | pctAboveLeague: ${pctAbove(
-    launchAngleAvg,
-    leagueStats.launchAngleAvg,
-  )}
-  hardHitPerc: ${hardHitPerc} | pctAboveLeague: ${pctAbove(
-    hardHitPerc,
-    leagueStats.hardHitPerc,
-  )}`);
-  }
   return (
     // SKILL RATING WITH NO DEFENSIVE IMPACT (0.10)
     0.1 * pctAbove(kAvoidanceRate, leagueStats.kAvoidanceRate) +
@@ -345,7 +308,7 @@ const [minContactRaw, maxContactRaw] = d3.extent(data, (d) => d.contactRaw);
 const [minPowerRaw, maxPowerRaw] = d3.extent(data, (d) => d.powerRaw);
 const [minPlateDisciplineRaw, maxPlateDisciplineRaw] = d3.extent(
   data,
-  (d) => d.plateDisciplineRaw,
+  (d) => d.plateDisciplineRaw
 );
 
 const powerScale = d3
@@ -369,14 +332,25 @@ data.forEach((d) => {
   d.contactScore = contactScale(d.contactRaw);
   d.plateDisciplineScore = plateDisciplineScale(d.plateDisciplineRaw);
 });
-console.table(
-  data
-    .sort((a, b) => b.plateDisciplineScore - a.plateDisciplineScore)
-    .map((d) => ({
-      NAME: d.name,
-      plateDisciplineScore: +d.plateDisciplineScore,
-    })),
-);
+
+const plateDiscList = data
+  .sort((a, b) => b.plateDisciplineScore - a.plateDisciplineScore)
+  .map((d) => ({
+    NAME: d.name,
+    plateDisciplineScore: +d.plateDisciplineScore,
+  }));
+const powerHittingList = data
+  .sort((a, b) => b.powerScore - a.powerScore)
+  .map((d) => ({
+    NAME: d.name,
+    powerScore: +d.powerScore,
+  }));
+const contactHittingList = data
+  .sort((a, b) => b.contactScore - a.contactScore)
+  .map((d) => ({
+    NAME: d.name,
+    contactScore: +d.contactScore,
+  }));
 update();
 
 function zoomin(ev) {
@@ -410,7 +384,7 @@ function update() {
     .domain([
       Math.min(
         0,
-        d3.min(currentData, (d) => d[xVar]),
+        d3.min(currentData, (d) => d[xVar])
       ),
       d3.max(currentData, (d) => d[xVar]),
     ])
@@ -427,7 +401,7 @@ function update() {
     .domain([
       Math.min(
         0,
-        d3.min(currentData, (d) => d[yVar]),
+        d3.min(currentData, (d) => d[yVar])
       ),
       d3.max(currentData, (d) => d[yVar]),
     ])
@@ -460,8 +434,8 @@ function update() {
       d3.rgb(
         rgbScale(d.powerScore),
         rgbScale(d.contactScore),
-        rgbScale(d.plateDisciplineScore),
-      ),
+        rgbScale(d.plateDisciplineScore)
+      )
     );
     c.s = sScale(c.s);
     c.l = lScale(c.l);
@@ -488,7 +462,20 @@ function update() {
               .html(
                 `<p><b>${d.name}</b></p>
                  <p>${options[xVar]}: ${d[xVar]}</p>
-                 <p>${options[yVar]}: ${d[yVar]}</p>`,
+                 <p>${options[yVar]}: ${d[yVar]}</p>
+                 <p>Power Hitting Score: ${d.powerScore.toFixed(5)} | Rank: (${
+                  powerHittingList.findIndex((j) => j.NAME == d.name) + 1
+                } of ${powerHittingList.length})</p>
+                 <p>Contact Hitting Score: ${d.contactScore.toFixed(
+                   5
+                 )} | Rank: (${
+                  contactHittingList.findIndex((j) => j.NAME == d.name) + 1
+                } of ${contactHittingList.length})</p>
+                 <p>Plate Discipline Score: ${d.plateDisciplineScore.toFixed(
+                   5
+                 )} | Rank: (${
+                  plateDiscList.findIndex((j) => j.NAME == d.name) + 1
+                } of ${plateDiscList.length})</p>`
               )
               .style("left", event.pageX + 20 + "px")
               .style("top", event.pageY - 28 + "px");
@@ -524,7 +511,7 @@ function update() {
           .style("fill", color);
         svg.call(zoom.transform, d3.zoomIdentity);
       },
-      (exit) => exit.transition(t).attr("r", 0).remove(),
+      (exit) => exit.transition(t).attr("r", 0).remove()
     );
 
   showPlayer(pinned_player);
@@ -559,7 +546,7 @@ function showPlayer(d) {
       .attr("stroke", "#e8e8e8")
       .attr("stroke-width", "2")
       .attr("r", radialScale(t))
-      .attr("class", "player"),
+      .attr("class", "player")
   );
 
   ticks.forEach((t) =>
@@ -570,7 +557,7 @@ function showPlayer(d) {
       .attr("fill", "#bbbbbb")
       .attr("font-size", "10px")
       .text(t.toString())
-      .attr("class", "player"),
+      .attr("class", "player")
   );
 
   function angleToCoordinate(angle, value) {
@@ -625,6 +612,8 @@ function showPlayer(d) {
     "Power Hitter": d3.mean(data, (dd) => dd.powerScore),
     "Contact Hitter": d3.mean(data, (dd) => dd.contactScore),
   };
+
+  // console.log(Object.keys(leagueAvgStats));
   function getPathCoordinates(data_point) {
     let coordinates = [];
     for (var i = 0; i < features.length; i++) {
@@ -634,35 +623,8 @@ function showPlayer(d) {
     }
     return coordinates;
   }
-  const leagueCoords = getPathCoordinates(leagueAvgStats);
-  leagueCoords.forEach((pt) => {
-    player
-      .append("circle")
-      .attr("class", "player")
-      .attr("r", 3)
-      .attr("fill", "#888")
-      .attr("cx", pt.x)
-      .attr("cy", pt.y);
-  });
-
-  player
-    .append("path")
-    .datum(leagueCoords)
-    .attr("class", "player")
-    .attr(
-      "d",
-      d3
-        .line()
-        .curve(d3.curveCatmullRomClosed)
-        .x((p) => p.x)
-        .y((p) => p.y),
-    )
-    .attr("stroke", "#bbb")
-    .attr("stroke-width", 2)
-    .attr("fill", "white")
-    .attr("fill-opacity", 0.2);
-
   const coords = getPathCoordinates(stats);
+  console.log(coords);
 
   coords.forEach((d) => {
     player
@@ -705,7 +667,7 @@ function showPlayer(d) {
         .line()
         .curve(d3.curveCatmullRomClosed)
         .x((d) => d.x)
-        .y((d) => d.y),
+        .y((d) => d.y)
     )
     .attr("stroke-width", 4)
     .attr("stroke", "#f05454")
@@ -713,6 +675,77 @@ function showPlayer(d) {
     .attr("stroke-opacity", 1)
     .attr("opacity", 0.5)
     .attr("class", "player");
+
+  const leagueCoords = getPathCoordinates(leagueAvgStats);
+  // features.forEach((featureName, i) => {
+  //   const pt = leagueCoords[i];
+  //   const avgValue = leagueAvgStats[featureName];
+  //   player
+  //     .append("circle")
+  //     .attr("class", "player")
+  //     .attr("r", 3.7)
+  //     .attr("fill", "#888")
+  //     .attr("cx", pt.x)
+  //     .attr("cy", pt.y)
+  //     .on("mouseover", function (event, d) {
+  //       d3.select("#tooltip")
+  //         .style("display", "block")
+  //         .html(
+  //           `<p><strong>${featureName}</strong></p>
+  //            <p>Average: ${avgValue.toFixed(5)}</p>`
+  //         )
+  //         .style("left", event.pageX - 39 + "px")
+  //         .style("top", event.pageY + 14 + "px");
+  //       d3.select(this).attr("r", 4);
+  //     })
+  //     .on("mouseout", function (event, d) {
+  //       d3.select("#tooltip").style("display", "none");
+  //       d3.select(this).attr("r", 3.7);
+  //     });
+  // });
+
+  player
+    .append("path")
+    .datum(leagueCoords)
+    .attr("class", "player")
+    .attr(
+      "d",
+      d3
+        .line()
+        .curve(d3.curveCatmullRomClosed)
+        .x((p) => p.x)
+        .y((p) => p.y)
+    )
+    .attr("stroke", "#aaa")
+    .attr("stroke-width", 1)
+    .attr("fill", "white")
+    .attr("fill-opacity", 0.2);
+  features.forEach((featureName, i) => {
+    const pt = leagueCoords[i];
+    const avgValue = leagueAvgStats[featureName];
+    player
+      .append("circle")
+      .attr("class", "player")
+      .attr("r", 3)
+      .attr("fill", "#888")
+      .attr("cx", pt.x)
+      .attr("cy", pt.y)
+      .on("mouseover", function (event, d) {
+        d3.select("#tooltip")
+          .style("display", "block")
+          .html(
+            `<p><strong>${featureName}</strong></p>
+             <p>Average: ${avgValue.toFixed(5)}</p>`
+          )
+          .style("left", event.pageX - 39 + "px")
+          .style("top", event.pageY + 14 + "px");
+        d3.select(this).attr("r", 4);
+      })
+      .on("mouseout", function (event, d) {
+        d3.select("#tooltip").style("display", "none");
+        d3.select(this).attr("r", 3);
+      });
+  });
 }
 
 // async function init() {
